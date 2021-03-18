@@ -1,0 +1,8 @@
+.vscode
+.snakemake
+.ipynb*
+*__pycache__
+networks
+results
+
+*.org

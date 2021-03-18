@@ -1,0 +1,22 @@
+network: "networks/elec_s_50_ec_lv1.0_Co2L0.1-1H.nc"
+
+load_shedding: true
+rolling_horizon: true
+group_size: 100  # 168 hours is 1 week
+
+s_max_pu:
+  start: 0.90
+  stop: 0.95
+  step: 0.05
+
+solver:
+  name: gurobi
+  threads: 4
+  method: 2
+  crossover: 0
+  BarConvTol: 1.e-4
+  FeasibilityTol: 1.e-5
+  AggFill: 0
+  PreDual: 0
+  GURO_PAR_BARDENSETHRESH: 200
+  BarHomogeneous: 1
