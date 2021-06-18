@@ -3,11 +3,13 @@
 from c_randomcluster import contingency_factor_cluster
 import pandas as pd
 import pypsa
+
 __author__ = "Amin Shokri Gazafroudi (KIT)"
 __copyright__ = f"Copyright 2021, {__author__}, GNU GPL 3"
 
 
 import warnings
+
 warnings.simplefilter("ignore")
 
 
@@ -26,10 +28,10 @@ n = pypsa.Network(snakemake.input[0])
 # Find robust buffer capacity factor for each cluster (subset) of buses
 
 c, cluster_list = contingency_factor_cluster(
-    n, 0, 'DE', c_start=0.5, c_end=1., app='robust', N=1e4)
+    n, 0, "DE", c_start=0.5, c_end=1.0, app="robust", N=1e4
+)
 
-out1 = pd.DataFrame({'Cluster no.': cluster_list,
-                     'C_robust': c})
+out1 = pd.DataFrame({"Cluster no.": cluster_list, "C_robust": c})
 
 # out1.to_csv('c_r_list.csv')
 out1.to_csv(snakemake.output[0])

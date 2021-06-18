@@ -122,7 +122,7 @@ def calculate_s_nom(n, i):
 
     Parameters
     ----------
-    n : pypsa.Network 
+    n : pypsa.Network
     i: int
        number of subnworks (e.g. 0, 1, 2, etc.)
 
@@ -153,9 +153,9 @@ def bounding_box(A, b, solver_name="gurobi"):
     Parameters
     ----------
     A : np.ndarray
-        e.g. lhs of polytope for N-X secured network 
+        e.g. lhs of polytope for N-X secured network
     b : np.ndarray
-        e.g. rhs of polytope for N-X secured network 
+        e.g. rhs of polytope for N-X secured network
     solver_name : str, default "gurobi"
         Solver
 
@@ -184,8 +184,7 @@ def bounding_box(A, b, solver_name="gurobi"):
 
         bounds = []
         for i in range(dim):
-            model.objective = pmo.objective(
-                getattr(model, f"x{i}"), sense=sense)
+            model.objective = pmo.objective(getattr(model, f"x{i}"), sense=sense)
             result = opt.solve(model)
             assert str(result.solver.termination_condition) == "optimal"
             bounds.append(result["Problem"][0]["Lower bound"])
@@ -217,7 +216,9 @@ def sample_bounding_box(lb, ub, N=1e5):
     dim = lb.shape[0]
 
     # TODO: use low-discrepancy series https://chaospy.readthedocs.io/en/master/sampling/sequences.html
-    return np.tile(lb, (1, N)) + create_halton_samples(N, dim) * np.tile(ub - lb, (1, N))
+    return np.tile(lb, (1, N)) + create_halton_samples(N, dim) * np.tile(
+        ub - lb, (1, N)
+    )
 
 
 def residuals(A, b, samples):
@@ -249,9 +250,9 @@ def volume(A, b, N=1e5):
     Parameters
     ----------
     A : np.ndarray
-        e.g. lhs of polytope for N-X secured network 
+        e.g. lhs of polytope for N-X secured network
     b : np.ndarray
-        e.g. rhs of polytope for N-X secured network 
+        e.g. rhs of polytope for N-X secured network
     N: int|float, default 1e5
         number of random samples, e.g 1e5
 
@@ -275,7 +276,7 @@ def polytope_n0(n, i):
 
     Parameters
     ----------
-    n : pypsa.Network 
+    n : pypsa.Network
     i: int
        number of subnworks (e.g. 0, 1, 2, etc.)
 
@@ -358,7 +359,9 @@ def polytope_n1(n, i):
     i_b = int(0)
 
     for line in n.lines.index:
-        if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]):
+        if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (
+            n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]
+        ):
             i_b += 1
 
             no = apply_outage(n, line)
@@ -391,7 +394,7 @@ def volumes(A1, b1, A2, b2, N=1e5):
     b1 : np.ndarray
         rhs of polytope for N-0 secured network (with buffer)
     A2 : np.ndarray
-        lhs of polytope for N-1 secured network 
+        lhs of polytope for N-1 secured network
     b2 : np.ndarray
         rhs of polytope for N-1 secured network
     N : int|float, default 1e5
@@ -407,10 +410,10 @@ def volumes(A1, b1, A2, b2, N=1e5):
         volume of polytope 1 inside polytope 2
     vol_1_in_2_norm_1 : float
         vol_1_in_2 / vol_1
-    vol_1_in_2_norm_2 : float 
+    vol_1_in_2_norm_2 : float
         vol_1_in_2 / vol_2
-    vol_2_notin_1 : float 
-        volume for the part of polytope 2 which is outside of polytope 1 
+    vol_2_notin_1 : float
+        volume for the part of polytope 2 which is outside of polytope 1
     vol_1_notin_2 : float
         volume for the part of polytope 1 which is outside of polytope 2
     z_bbox2_in_1 : int
@@ -481,7 +484,7 @@ def volumes(A1, b1, A2, b2, N=1e5):
 
 def extract_country(n, i, A, ct):
     """
-    Reduce dimension of polytope to buses 
+    Reduce dimension of polytope to buses
     within a specified country.
 
     Parameters
@@ -512,14 +515,18 @@ def extract_country(n, i, A, ct):
         if b.country == ct:
             ctr += 1
             in_ct.append(j)
-            x_ct.append(sub.buses().x[j+1])
-            y_ct.append(sub.buses().y[j+1])
+            x_ct.append(sub.buses().x[j + 1])
+            y_ct.append(sub.buses().y[j + 1])
 
     return A[:, in_ct], in_ct, x_ct, y_ct, ctr
 
 
 def break_condition_approximate(
-    vout, min_ratio=0.99999, max_ratio=1.000001, min_overlap=0.9999999, max_overlap=1.000000001
+    vout,
+    min_ratio=0.99999,
+    max_ratio=1.000001,
+    min_overlap=0.9999999,
+    max_overlap=1.000000001,
 ):
     """
     Evaluate break condition for approximate approach.
@@ -547,19 +554,19 @@ def break_condition_approximate(
     ratio = vol_1 / vol_2
     overlap = vol_1_notin_2 / vol_2_notin_1
 
-    print('ration=', ratio)  # updated
-    print('overlap=', overlap)  # updated
+    print("ration=", ratio)  # updated
+    print("overlap=", overlap)  # updated
 
     return (
-        ((ratio <= max_ratio)
-         & (ratio >= min_ratio)
-         & (overlap <= max_overlap)
-         & (overlap >= min_overlap))
-        or  # updated
-        ((ratio <= max_ratio)  # updated
-         & (ratio >= min_ratio)  # updated
-         & (overlap == 0))  # updated
-    )
+        (ratio <= max_ratio)
+        & (ratio >= min_ratio)
+        & (overlap <= max_overlap)
+        & (overlap >= min_overlap)
+    ) or (  # updated
+        (ratio <= max_ratio)  # updated
+        & (ratio >= min_ratio)  # updated
+        & (overlap == 0)
+    )  # updated
 
 
 def break_condition_robust(vout):
@@ -589,11 +596,7 @@ def selection_sort(xx):
     return xx
 
 
-def cluster_country(n,
-                    i,
-                    A,
-                    ct,
-                    cluster):
+def cluster_country(n, i, A, ct, cluster):
 
     A_ct, b_ct, x_ct, y_ct, ctr = extract_country(n, i, A, ct)
 
@@ -605,7 +608,7 @@ def cluster_country(n,
     answerSize = 0
 
     while answerSize < clusterSize:
-        x = random.randint(1, ctr-1)
+        x = random.randint(1, ctr - 1)
         if x not in randomlist:
             randomlist.append(x)
             answerSize += 1
@@ -617,10 +620,7 @@ def cluster_country(n,
     return A_cluster, cluster_no, randomlist
 
 
-def plot_cluster(n,
-                 i,
-                 A,
-                 ct):
+def plot_cluster(n, i, A, ct):
 
     A_ct, b_ct, x_ct, y_ct, ctr = extract_country(n, i, A, ct)
 
@@ -633,54 +633,62 @@ def plot_cluster(n,
 
     bic = int(4)
     if ctr % bic != 0:
-        n_cluster = int(ctr/bic)+1
+        n_cluster = int(ctr / bic) + 1
     else:
-        n_cluster = int(ctr/bic)
+        n_cluster = int(ctr / bic)
 
     km = KMeans(
-        n_clusters=n_cluster, init='random',  # desired cluster=3
-        n_init=10, max_iter=300,  # max_iter=300 maximum number of iterations
-        tol=1e-04, random_state=0  # tol = tolerance 0.0001
+        n_clusters=n_cluster,
+        init="random",  # desired cluster=3
+        n_init=10,
+        max_iter=300,  # max_iter=300 maximum number of iterations
+        tol=1e-04,
+        random_state=0,  # tol = tolerance 0.0001
     )
     y_km = km.fit_predict(X)
     # plot clusters
-    for z in range(0, max(y_km)+1):
+    for z in range(0, max(y_km) + 1):
         plt.scatter(
-            X[y_km == z, 0], X[y_km == z, 1],
+            X[y_km == z, 0],
+            X[y_km == z, 1],
             s=50,
-            marker='s', edgecolor='black'  # ,label=z
+            marker="s",
+            edgecolor="black",  # ,label=z
         )
 
     # plot the centroids
     plt.scatter(
-        km.cluster_centers_[:, 0], km.cluster_centers_[:, 1],
-        s=250, marker='*',
-        c='red', edgecolor='black',
+        km.cluster_centers_[:, 0],
+        km.cluster_centers_[:, 1],
+        s=250,
+        marker="*",
+        c="red",
+        edgecolor="black",
         # label='centroids'
     )
     # plt.legend(scatterpoints=1)
     plt.grid()
-    plt.savefig('fig1.png')
+    plt.savefig("fig1.png")
     # plt.show()
 
 
-def contingency_factor_cluster(
-        n,
-        i,
-        ct,
-        c_start=0.,
-        c_end=1.,
-        app='robust',
-        N=1e5):
+def contingency_factor_cluster(n, i, ct, c_start=0.0, c_end=1.0, app="robust", N=1e5):
     A_n0, b_n0 = polytope_n0(n, i)
-    A_n0_ct, cluster_size, randomlist = cluster_country(
-        n, i,  A_n0, ct, cluster=0)
+    A_n0_ct, cluster_size, randomlist = cluster_country(n, i, A_n0, ct, cluster=0)
 
     cluster_list = []
     c = []
-    for clster in range(0, cluster_size+1):
+    for clster in range(0, cluster_size + 1):
         c_cluster, vol_cluster, vol_prog_cluster = contingency_factor(
-            n, 0, 'DE', approach=app, c_start=c_start, c_end=c_end, N=int(N), cluster=clster)
+            n,
+            0,
+            "DE",
+            approach=app,
+            c_start=c_start,
+            c_end=c_end,
+            N=int(N),
+            cluster=clster,
+        )
         c.append(c_cluster)
         cluster_list.append(clster)
         print(clster, c_cluster)
@@ -693,8 +701,8 @@ def contingency_factor(
     i,
     ct=None,
     approach="approximate",
-    c_start=0.,
-    c_end=1.,
+    c_start=0.0,
+    c_end=1.0,
     c_step=0.01,
     N=1e5,
     A_n0=None,
@@ -722,9 +730,9 @@ def contingency_factor(
     c_start : float, default 0.0
         Initial contingency factor, [0.,0.99]
     c_end : float, default 1.0
-        Final contingency factor, [0.01,1.0]    
+        Final contingency factor, [0.01,1.0]
     c_step : float, default 0.01
-        Step size for contingency factor loop, [0.01,1.0]    
+        Step size for contingency factor loop, [0.01,1.0]
     N : int|float, default 1e5
         Number of random samples
     A_n0 : np.ndarray, default None
@@ -770,16 +778,14 @@ def contingency_factor(
 
     if ct is not None:
         if cluster is not None:
-            A_n0_ct, cluster_size, randomlist = cluster_country(
-                n, i,  A_n0, ct, cluster)
+            A_n0_ct, cluster_size, randomlist = cluster_country(n, i, A_n0, ct, cluster)
             A_n1_ct_ign, b_ct_ign, x_ct_ign, y_ct_ign, ctr_ign = extract_country(
-                n, i, A_n1, ct)
+                n, i, A_n1, ct
+            )
             A_n1_ct = A_n1_ct_ign[:, randomlist]
         else:
-            A_n0_ct, b_n0_ct, x_n0_ct, y_n0_ct, ctr_n0 = extract_country(
-                n, i,  A_n0, ct)
-            A_n1_ct, b_n1_ct, x_n1_ct, y_n1_ct, ctr_n1 = extract_country(
-                n, i,  A_n1, ct)
+            A_n0_ct, b_n0_ct, x_n0_ct, y_n0_ct, ctr_n0 = extract_country(n, i, A_n0, ct)
+            A_n1_ct, b_n1_ct, x_n1_ct, y_n1_ct, ctr_n1 = extract_country(n, i, A_n1, ct)
     else:
         A_n0_ct, A_n1_ct = A_n0, A_n1
 
@@ -801,17 +807,14 @@ def contingency_factor(
     return (c, vout[4], vol_progress)
 
 
-def calculate_gl_line(
-    n,
-    i
-):
+def calculate_gl_line(n, i):
     """
     Find redundant capacity for each line in each subnetwork.
 
     Parameters
     ----------
     n : pypsa.Network
-    i : int, 
+    i : int,
         Number of the subnetwork, e.g. 0, 1, etc.
 
     Returns
@@ -826,14 +829,18 @@ def calculate_gl_line(
     sub = n.sub_networks.obj[i]
     i_b = int(0)
 
-    gl_line = pd.DataFrame({'gl_of_line': np.zeros(len(sub.branches()))},
-                           index=sub.branches().index)
+    gl_line = pd.DataFrame(
+        {"gl_of_line": np.zeros(len(sub.branches()))}, index=sub.branches().index
+    )
 
-    S_new = pd.DataFrame({'S_modified': np.zeros(len(sub.branches()))},
-                         index=sub.branches().index)
+    S_new = pd.DataFrame(
+        {"S_modified": np.zeros(len(sub.branches()))}, index=sub.branches().index
+    )
 
     for line in n.lines.index:
-        if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]):
+        if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (
+            n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]
+        ):
             # select the index/name of the line you want to remove
             bus0_removed_line = n.lines.bus0.loc[line]
             bus1_removed_line = n.lines.bus1.loc[line]
@@ -846,28 +853,35 @@ def calculate_gl_line(
             loop_end = int(1e6)
 
             for i_ct in range(loop_int, loop_end):
-                g_l = 0.01*i_ct
-                no.add("Generator", "gen_add_{}".format(line),
-                       bus=bus0_removed_line,
-                       p_set=g_l * P_add_max,
-                       control="PQ")
+                g_l = 0.01 * i_ct
+                no.add(
+                    "Generator",
+                    "gen_add_{}".format(line),
+                    bus=bus0_removed_line,
+                    p_set=g_l * P_add_max,
+                    control="PQ",
+                )
 
-                no.add("Load", "load_add_{}".format(line),
-                       bus=bus1_removed_line,
-                       p_set=g_l * P_add_max)
+                no.add(
+                    "Load",
+                    "load_add_{}".format(line),
+                    bus=bus1_removed_line,
+                    p_set=g_l * P_add_max,
+                )
 
-##################
+                ##################
 
                 no.lpf()
 
-##################
+                ##################
 
-                p_line_norm = abs((no.lines_t.p0)/(no.lines.s_nom))
-                if np.all(p_line_norm.loc['now'] <= 1.0) != 1:
-                    gl_opt = g_l-0.01
+                p_line_norm = abs((no.lines_t.p0) / (no.lines.s_nom))
+                if np.all(p_line_norm.loc["now"] <= 1.0) != 1:
+                    gl_opt = g_l - 0.01
                     gl_line.gl_of_line[sub.branches().index[i_b]] = gl_opt
-                    S_new.S_modified[sub.branches().index[i_b]
-                                     ] = gl_opt * n.lines["s_nom"][line]
+                    S_new.S_modified[sub.branches().index[i_b]] = (
+                        gl_opt * n.lines["s_nom"][line]
+                    )
                     break
 
                 load_to_remove = "load_add_{}".format(line)
@@ -875,13 +889,13 @@ def calculate_gl_line(
                 no.remove("Load", load_to_remove)
                 no.remove("Generator", gen_to_remove)
 
-##################
+            ##################
             i_b += 1
             if i_b == len(sub.branches()):
                 break
 
-    print('gl_line and S_new found!')
-    print('-----------------------------------')
+    print("gl_line and S_new found!")
+    print("-----------------------------------")
     return gl_line, S_new
 
 
@@ -890,8 +904,8 @@ def find_c_robust_gl(
     i,
     ct=None,
     approach="approximate",
-    c_start=0.,
-    c_end=1.,
+    c_start=0.0,
+    c_end=1.0,
     c_step=0.01,
     N=1e5,
     A_n0=None,
@@ -908,7 +922,7 @@ def find_c_robust_gl(
     Parameters
     ----------
     n : pypsa.Network
-    i : int, 
+    i : int,
         Number of the subnetwork, e.g. 0, 1, etc.
     ct : str, default None
         Name of the country, e.g. "DE".
@@ -918,9 +932,9 @@ def find_c_robust_gl(
     c_start : float, default 0.0
         Initial contingency factor, [0.,0.99]
     c_end : float, default 1.0
-        Final contingency factor, [0.01,1.0]    
+        Final contingency factor, [0.01,1.0]
     c_step : float, default 0.01
-        Step size for contingency factor loop, [0.01,1.0]    
+        Step size for contingency factor loop, [0.01,1.0]
     N : int|float, default 1e5
         Number of random samples
     A_n0 : np.ndarray, default None
@@ -947,7 +961,7 @@ def find_c_robust_gl(
         dictionary of progression of vol_1_in_2_norm_2
         from c_start to c_end
     gl_line : pandas.core.frame.DataFrame
-        redundant capacity for each line 
+        redundant capacity for each line
     """
     assert approach in [
         "approximate",
@@ -965,8 +979,8 @@ def find_c_robust_gl(
         A_n1, b_n1 = polytope_n1(n, i)
 
     if ct is not None:
-        A_n0_ct = extract_country(n, i,  A_n0, ct)
-        A_n1_ct = extract_country(n, i,  A_n1, ct)
+        A_n0_ct = extract_country(n, i, A_n0, ct)
+        A_n1_ct = extract_country(n, i, A_n1, ct)
     else:
         A_n0_ct, A_n1_ct = A_n0, A_n1
 
@@ -979,7 +993,9 @@ def find_c_robust_gl(
     gl_line, S_new = calculate_gl_line(n_c, i)
 
     for line in n_c.lines.index:
-        if (n_c.lines.at[line, "bus0"] == sub_c.branches().bus0[i_b]) & (n_c.lines.at[line, "bus1"] == sub_c.branches().bus1[i_b]):
+        if (n_c.lines.at[line, "bus0"] == sub_c.branches().bus0[i_b]) & (
+            n_c.lines.at[line, "bus1"] == sub_c.branches().bus1[i_b]
+        ):
             n_c.lines["s_nom"][line] = S_new.S_modified[sub_c.branches().index[i_b]]
             i_b += 1
             if i_b == len(sub_c.branches()):
@@ -1007,8 +1023,8 @@ def find_c_robust_gl(
                 c -= c_step
             break
 
-    print('c_robust_gl found!')
-    print('-----------------------------------')
+    print("c_robust_gl found!")
+    print("-----------------------------------")
     return (c, vout[4], vol_progress, gl_line)
 
 
@@ -1016,8 +1032,8 @@ def calculate_initial_c_line(
     n,
     i,
     ct,
-    c_start=0.,
-    c_end=1.,
+    c_start=0.0,
+    c_end=1.0,
     N=1e5,
     A_n0=None,
     b_n0=None,
@@ -1033,7 +1049,7 @@ def calculate_initial_c_line(
     Parameters
     ----------
     n : pypsa.Network
-    i : int, 
+    i : int,
         Number of the subnetwork, e.g. 0, 1, etc.
     ct : str, default None
         Name of the country, e.g. "DE".
@@ -1043,9 +1059,9 @@ def calculate_initial_c_line(
     c_start : float, default 0.0
         Initial contingency factor, [0.,0.99]
     c_end : float, default 1.0
-        Final contingency factor, [0.01,1.0]    
+        Final contingency factor, [0.01,1.0]
     c_step : float, default 0.01
-        Step size for contingency factor loop, [0.01,1.0]    
+        Step size for contingency factor loop, [0.01,1.0]
     N : int|float, default 1e5
         Number of random samples
     A_n0 : np.ndarray, default None
@@ -1068,27 +1084,33 @@ def calculate_initial_c_line(
     c_rob_uni : float
         robust contingency factor for selected country/ies
     C_r_line : pandas.core.frame.DataFrame
-        initial contingency factor for each line 
+        initial contingency factor for each line
 
     """
 
     c_rob, v, vol, gl_line = find_c_robust_gl(
-        n, i, ct, approach='robust', c_start=c_start, c_end=c_end, N=N)
+        n, i, ct, approach="robust", c_start=c_start, c_end=c_end, N=N
+    )
 
     c_rob_uni, v, vol = contingency_factor(
-        n, i, ct, approach='robust', c_start=c_start, c_end=c_end, N=N)
+        n, i, ct, approach="robust", c_start=c_start, c_end=c_end, N=N
+    )
 
     sub = n.sub_networks.obj[i]
 
     i_b = int(0)
 
-    C_r_line = pd.DataFrame({'C_of_line': np.zeros(len(sub.branches()))},
-                            index=sub.branches().index)
+    C_r_line = pd.DataFrame(
+        {"C_of_line": np.zeros(len(sub.branches()))}, index=sub.branches().index
+    )
 
     for line in n.lines.index:
-        if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]):
-            C_r_line.C_of_line[sub.branches().index[i_b]] = c_rob * \
-                gl_line.gl_of_line[sub.branches().index[i_b]]
+        if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (
+            n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]
+        ):
+            C_r_line.C_of_line[sub.branches().index[i_b]] = (
+                c_rob * gl_line.gl_of_line[sub.branches().index[i_b]]
+            )
 
             if C_r_line.C_of_line[sub.branches().index[i_b]] < c_rob_uni:
                 C_r_line.C_of_line[sub.branches().index[i_b]] = c_rob_uni
@@ -1108,8 +1130,8 @@ def calculate_c_line(
     i,
     ct=None,
     approach="approximate",
-    c_start=0.,
-    c_end=1.,
+    c_start=0.0,
+    c_end=1.0,
     c_step=0.01,
     N=1e5,
     A_n0=None,
@@ -1126,7 +1148,7 @@ def calculate_c_line(
     Parameters
     ----------
     n : pypsa.Network
-    i : int, 
+    i : int,
         Number of the subnetwork, e.g. 0, 1, etc.
     ct : str, default None
         Name of the country, e.g. "DE".
@@ -1136,9 +1158,9 @@ def calculate_c_line(
     c_start : float, default 0.0
         Initial contingency factor, [0.,0.99]
     c_end : float, default 1.0
-        Final contingency factor, [0.01,1.0]    
+        Final contingency factor, [0.01,1.0]
     c_step : float, default 0.01
-        Step size for contingency factor loop, [0.01,1.0]    
+        Step size for contingency factor loop, [0.01,1.0]
     N : int|float, default 1e5
         Number of random samples
     A_n0 : np.ndarray, default None
@@ -1178,54 +1200,58 @@ def calculate_c_line(
         A_n1, b_n1 = polytope_n1(n, i)
 
     if ct is not None:
-        A_n0_ct = extract_country(n, i,  A_n0, ct)
-        A_n1_ct = extract_country(n, i,  A_n1, ct)
+        A_n0_ct = extract_country(n, i, A_n0, ct)
+        A_n1_ct = extract_country(n, i, A_n1, ct)
     else:
         A_n0_ct, A_n1_ct = A_n0, A_n1
 
     vol_progress = {}
 
     C_r_line, c_rob_uni = calculate_initial_c_line(
-        n, i, ct, c_start=c_start, c_end=c_end, N=N)
+        n, i, ct, c_start=c_start, c_end=c_end, N=N
+    )
 
     c_line = C_r_line
 
     loop_int = 1
 
-    loop_end = int(1+((1 - c_rob_uni)*100))
+    loop_end = int(1 + ((1 - c_rob_uni) * 100))
 
-    leng_loop = loop_end-loop_int
+    leng_loop = loop_end - loop_int
 
-    print('c_rob_uni is:')
+    print("c_rob_uni is:")
     print(c_rob_uni)
-    print('C_r_line is:')
+    print("C_r_line is:")
     print(C_r_line)
-    print('-------')
+    print("-------")
     print("ready")
-    print('-------')
+    print("-------")
     done = 0
     sub = n.sub_networks.obj[i]
     for i_ct in range(loop_int, loop_end):
 
         if done == 1:
-            print('Done!')
+            print("Done!")
             print(c_line)
             break
 
         i_b = int(0)
         for line in n.lines.index:
-            if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]):
+            if (n.lines.at[line, "bus0"] == sub.branches().bus0[i_b]) & (
+                n.lines.at[line, "bus1"] == sub.branches().bus1[i_b]
+            ):
                 if C_r_line.C_of_line[sub.branches().index[i_b]] > c_rob_uni:
                     C_r_line.C_of_line[sub.branches().index[i_b]] -= 0.01
                 else:
-                    C_r_line.C_of_line[sub.branches(
-                    ).index[i_b]] = C_r_line.C_of_line[sub.branches().index[i_b]]
+                    C_r_line.C_of_line[sub.branches().index[i_b]] = C_r_line.C_of_line[
+                        sub.branches().index[i_b]
+                    ]
 
                 c_line = C_r_line
                 i_ct = np.round(i_ct, decimals=3)
-                print(i_ct, '-----Next----', line)
+                print(i_ct, "-----Next----", line)
                 print(c_line)
-                print('-----------')
+                print("-----------")
                 logger.info(f"Check contingency factor {i_ct} for {approach}.")
                 n_c = n.copy()
                 b_c, s_nom = calculate_s_nom(n_c, i)
@@ -1236,12 +1262,12 @@ def calculate_c_line(
                 z_bbox2_in_1 = vout[7]
                 z_bbox2_in_1_and_2 = vout[9]
 
-#                 if z_bbox2_in_1 != z_bbox2_in_1_and_2:
-#                     print('Out')
-#                 else:
-#                     print('IN')
+                #                 if z_bbox2_in_1 != z_bbox2_in_1_and_2:
+                #                     print('Out')
+                #                 else:
+                #                     print('IN')
 
-#                 print('-----------')
+                #                 print('-----------')
 
                 if z_bbox2_in_1 == z_bbox2_in_1_and_2:
                     done = 1
@@ -1251,11 +1277,11 @@ def calculate_c_line(
                     if i_b == len(sub.branches()):
                         break
 
-#             if done == 1:
-#                 print('Done!')
-#                 print(c_line)
-#                 break
-#     if done == 1:
-#         break
+    #             if done == 1:
+    #                 print('Done!')
+    #                 print(c_line)
+    #                 break
+    #     if done == 1:
+    #         break
 
-    return (c_line)
+    return c_line

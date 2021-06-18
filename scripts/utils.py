@@ -7,7 +7,11 @@ __copyright__ = f"Copyright 2021, {__author__}, GNU GPL 3"
 def get_branch_outages(n):
     """Creates list of considered outages"""
     outages = n.lines.index[n.lines.index.str.contains("_outage")].union(
-        n.lines.index[~n.lines.index.str.contains("_outage") & ~(n.lines.index + "_outage").isin(n.lines.index)])
+        n.lines.index[
+            ~n.lines.index.str.contains("_outage")
+            & ~(n.lines.index + "_outage").isin(n.lines.index)
+        ]
+    )
     return [("Line", o) for o in outages]
 
 

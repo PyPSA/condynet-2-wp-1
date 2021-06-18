@@ -21,17 +21,20 @@ def prepare_network(n):
     n.links.p_nom_extendable = False
     n.lines.s_nom_extendable = False
 
-#     n.generators.p_nom = n.generators.p_nom_opt
-#     n.storage_units.p_nom = n.storage_units.p_nom_opt
-#     n.links.p_nom = n.links.p_nom_opt
-#     n.lines.s_nom = n.lines.s_nom_opt
+    #     n.generators.p_nom = n.generators.p_nom_opt
+    #     n.storage_units.p_nom = n.storage_units.p_nom_opt
+    #     n.links.p_nom = n.links.p_nom_opt
+    #     n.lines.s_nom = n.lines.s_nom_opt
 
     n.remove("GlobalConstraint", "CO2Limit")
 
     co2_price = 25
 
-    co2_costs = n.generators.carrier.map(
-        n.carriers.co2_emissions)*co2_price/n.generators.efficiency
+    co2_costs = (
+        n.generators.carrier.map(n.carriers.co2_emissions)
+        * co2_price
+        / n.generators.efficiency
+    )
 
     n.generators.marginal_cost += co2_costs
 
@@ -113,7 +116,7 @@ if __name__ == "__main__":
 
     n = prepare_network(n)
 
-#    n = apply_hacks(n)
+    #    n = apply_hacks(n)
 
     n = split_outage_lines(n)
 

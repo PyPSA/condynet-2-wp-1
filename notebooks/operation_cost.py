@@ -10,9 +10,10 @@ from pypsa.contingency import calculate_BODF
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-#plt.style.use(["bmh", "matplotlibrc"])
 
-#n_pre = pypsa.Network("../contingency-workflow-2/networks/prenetwork.nc")
+# plt.style.use(["bmh", "matplotlibrc"])
+
+# n_pre = pypsa.Network("../contingency-workflow-2/networks/prenetwork.nc")
 
 # n00 = pypsa.Network("../contingency-workflow-2/results/noESS_co2_25_C_0to100/postnetwork_heur0.0.nc")
 # n05 = pypsa.Network("../contingency-workflow-2/results/noESS_co2_25_C_0to100/postnetwork_heur0.05.nc")
@@ -100,15 +101,17 @@ nfull = pypsa.Network("../results/noESS_co2_25_C_0to100/postnetwork_full.nc")
 # c85 = (n85.generators_t.p.sum()*n85.generators.sign*n85.generators.marginal_cost).sum()
 # c90 = (n90.generators_t.p.sum()*n90.generators.sign*n90.generators.marginal_cost).sum()
 # c95 = (n95.generators_t.p.sum()*n95.generators.sign*n95.generators.marginal_cost).sum()
-c100 = (n100.generators_t.p.sum()*n100.generators.sign *
-        n100.generators.marginal_cost).sum()
-cfull = (nfull.generators_t.p.sum()*nfull.generators.sign *
-         nfull.generators.marginal_cost).sum()
+c100 = (
+    n100.generators_t.p.sum() * n100.generators.sign * n100.generators.marginal_cost
+).sum()
+cfull = (
+    nfull.generators_t.p.sum() * nfull.generators.sign * nfull.generators.marginal_cost
+).sum()
 
 
-dif = cfull-c100
-print('c100=', c100)
+dif = cfull - c100
+print("c100=", c100)
 
-print('cfull=', cfull)
+print("cfull=", cfull)
 
-print('dif=', dif)
+print("dif=", dif)

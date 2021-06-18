@@ -28,14 +28,16 @@ if __name__ == "__main__":
         "formulation": "kirchhoff",
     }
 
-    with memory_logger(filename=snakemake.log.memory) as mem, timer("solving time") as tim:
+    with memory_logger(filename=snakemake.log.memory) as mem, timer(
+        "solving time"
+    ) as tim:
         group_size = snakemake.config["group_size"]
         for i in range(int(len(n.snapshots) / group_size)):
-            snapshots = n.snapshots[group_size *
-                                    i: group_size * i + group_size]
+            snapshots = n.snapshots[group_size * i : group_size * i + group_size]
             n.sclopf(snapshots=snapshots, **sclopf_kwargs)
 
-    pd.Series({"time [sec]": tim.usec/1e6,
-               "memory [MB]": mem.mem_usage[0]}).to_csv(snakemake.log.stats)
+    pd.Series({"time [sec]": tim.usec / 1e6, "memory [MB]": mem.mem_usage[0]}).to_csv(
+        snakemake.log.stats
+    )
 
     n.export_to_netcdf(snakemake.output[0])
